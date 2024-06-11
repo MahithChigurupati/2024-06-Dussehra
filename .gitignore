@@ -1,6 +1,7 @@
 # Compiler files
 cache/
 out/
+lib/
 
 # Ignores development broadcast logs
 !/broadcast
@@ -12,3 +13,7 @@ docs/
 
 # Dotenv file
 .env
+
+1. You have been
+2. Cursed By
+3. Ravana
