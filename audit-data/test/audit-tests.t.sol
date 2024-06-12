@@ -209,6 +209,33 @@ contract CounterTest is Test {
         assertNotEq(choosingRam.selectedRam(), player1); // now, selected ram is not player 1
     }
 
+    function test__RamCanBeChangedAfterSelection() public participants {
+        vm.warp(1728691196); // executing the transaction exactly at a particular timestamp to get a predictable outcome of 0 for simplicity
+        uint256 random = uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))) % 2;
+
+        assertEq(random, 0);
+        assertEq(ramNFT.getCharacteristics(random).ram, player1);
+        vm.startPrank(player1);
+
+        for (uint64 i = 0; i < 5; i++) {
+            choosingRam.increaseValuesOfParticipants(0, 1); // lets assume player 1 is selected as ram
+        }
+
+        vm.stopPrank();
+
+        assertEq(choosingRam.selectedRam(), player1); // selected ram is player 1
+
+        vm.warp(1728691197);
+
+        vm.startPrank(player2);
+        for (uint64 i = 0; i < 5; i++) {
+            choosingRam.increaseValuesOfParticipants(1, 0); // player2 is tring at different tiime to overwrite player 1
+        }
+        vm.stopPrank();
+
+        assertEq(choosingRam.selectedRam(), player2); // now, selected ram is not player 1 instead it player 2, so next player can overwrite initial winner
+    }
+
     // function increaseValuesOfParticipants_Simplified(uint256 tokenIdOfChallenger, uint256 tokenIdOfAnyParticipant)
     //     public
     //     RamIsNotSelected
@@ -289,6 +316,65 @@ contract CounterTest is Test {
         assertEq(address(dussehra).balance, 2 ether); // funds are locked
     }
 
+    function test_zeroAddress() public participants {
+        assertEq(address(dussehra).balance, 2 ether); // two players entered the game and now protocol has 2 ether
+
+        vm.startPrank(organiser);
+        ramNFT.setChoosingRamContract(address(0)); // setting zero address
+        vm.stopPrank();
+
+        vm.startPrank(player1);
+        vm.expectRevert();
+        choosingRam.increaseValuesOfParticipants(0, 1); // should revert as zero address is set as a result nft characteristics can't be updated
+        vm.stopPrank();
+    }
+
+    function test__ChallengerIsParticipant() public participants {
+        assertEq(ramNFT.getCharacteristics(0).isJitaKrodhah, false);
+
+        vm.startPrank(player1);
+        choosingRam.increaseValuesOfParticipants(0, 0);
+        vm.stopPrank();
+
+        assertEq(ramNFT.getCharacteristics(0).isJitaKrodhah, true);
+    }
+
+    function test__PlayerCanJoinAfterEvent() public {
+        vm.startPrank(player1);
+        vm.deal(player1, 1 ether);
+        dussehra.enterPeopleWhoLikeRam{value: 1 ether}();
+
+        vm.warp(1728777600);
+
+        vm.startPrank(organiser);
+        choosingRam.selectRamIfNotSelected(); // selecting ram
+        vm.stopPrank();
+
+        dussehra.killRavana(); // killing ravana
+
+        vm.startPrank(player1);
+        dussehra.withdraw(); // withdrawing by ram
+
+        vm.startPrank(player2);
+        vm.deal(player2, 1 ether);
+        dussehra.enterPeopleWhoLikeRam{value: 1 ether}(); // joining after event ends
+
+        assertEq(address(dussehra).balance, 1 ether);
+
+        vm.warp(1728777669 + 1);
+
+        vm.expectRevert();
+        dussehra.killRavana(); // killing ravana after event ends is not possible
+
+        vm.expectRevert();
+        vm.startPrank(player1);
+        dussehra.withdraw(); // ram cant withdraw as reward is claimed
+
+        vm.startPrank(player2);
+        vm.expectRevert();
+        dussehra.withdraw(); // even player2 cant withdraw hence funds are locked
+    }
+
     function test__ReentrancyForKillRavana() public participants {
         assertEq(address(dussehra).balance, 2 ether); // two players entered the game and now protocol has 2 ether
 
@@ -324,27 +410,5 @@ contract CounterTest is Test {
         vm.deal(player3, 1 ether);
         dussehra.enterPeopleWhoLikeRam{value: 1 ether}();
         vm.stopPrank();
-    }
-}
-
-contract MaliciousOrganiser {
-    Dussehra dussehra;
-    address s_dussehra;
-
-    constructor(address _dussehra) {
-        s_dussehra = _dussehra;
-        dussehra = Dussehra(s_dussehra);
-    }
-
-    receive() external payable {
-        console.log(address(msg.sender).balance);
-        if (address(msg.sender).balance != 0 ether) dussehra.killRavana();
-    }
-
-    function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data)
-        external
-        returns (bytes4)
-    {
-        return this.onERC721Received.selector;
     }
 }
