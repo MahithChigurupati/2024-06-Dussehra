@@ -1,0 +1,308 @@
+INFO:Detectors:
+Dussehra.killRavana() (src/Dussehra.sol#67-88) sends eth to arbitrary user
+	Dangerous calls:
+	- (success,None) = organiser.call{value: totalAmountGivenToRam}() (src/Dussehra.sol#86)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#functions-that-send-ether-to-arbitrary-destinations
+INFO:Detectors:
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) uses a weak PRNG: "random = uint256(keccak256(bytes)(abi.encodePacked(block.timestamp,block.prevrandao,msg.sender))) % 2 (src/ChoosingRam.sol#52)"
+ChoosingRam.selectRamIfNotSelected() (src/ChoosingRam.sol#84-96) uses a weak PRNG: "random = uint256(keccak256(bytes)(abi.encodePacked(block.timestamp,block.prevrandao))) % ramNFT.tokenCounter() (src/ChoosingRam.sol#93)"
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#weak-PRNG
+INFO:Detectors:
+Reentrancy in Dussehra.withdraw() (src/Dussehra.sol#92-104):
+	External calls:
+	- (success,None) = msg.sender.call{value: amount}() (src/Dussehra.sol#101)
+	State variables written after the call(s):
+	- totalAmountGivenToRam = 0 (src/Dussehra.sol#103)
+	Dussehra.totalAmountGivenToRam (src/Dussehra.sol#25) can be used in cross function reentrancies:
+	- Dussehra.killRavana() (src/Dussehra.sol#67-88)
+	- Dussehra.totalAmountGivenToRam (src/Dussehra.sol#25)
+	- Dussehra.withdraw() (src/Dussehra.sol#92-104)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities
+INFO:Detectors:
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) uses a dangerous strict equality:
+	- random == 0 (src/ChoosingRam.sol#55)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+INFO:Detectors:
+RamNFT.setChoosingRamContract(address) (src/RamNFT.sol#45-47) should emit an event for:
+	- choosingRamContract = _choosingRamContract (src/RamNFT.sol#46)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-events-access-control
+INFO:Detectors:
+RamNFT.setChoosingRamContract(address)._choosingRamContract (src/RamNFT.sol#45) lacks a zero-check on :
+		- choosingRamContract = _choosingRamContract (src/RamNFT.sol#46)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+INFO:Detectors:
+Reentrancy in ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82):
+	External calls:
+	- ramNFT.updateCharacteristics(tokenIdOfChallenger,true,true,true,true,true) (src/ChoosingRam.sol#65)
+	State variables written after the call(s):
+	- selectedRam = ramNFT.getCharacteristics(tokenIdOfChallenger).ram (src/ChoosingRam.sol#66)
+Reentrancy in ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82):
+	External calls:
+	- ramNFT.updateCharacteristics(tokenIdOfAnyPerticipent,true,true,true,true,true) (src/ChoosingRam.sol#78)
+	State variables written after the call(s):
+	- selectedRam = ramNFT.getCharacteristics(tokenIdOfAnyPerticipent).ram (src/ChoosingRam.sol#79)
+Reentrancy in RamNFT.mintRamNFT(address) (src/RamNFT.sol#49-61):
+	External calls:
+	- _safeMint(to,newTokenId) (src/RamNFT.sol#51)
+		- retval = IERC721Receiver(to).onERC721Received(operator,from,tokenId,data) (lib/openzeppelin-contracts/contracts/token/ERC721/utils/ERC721Utils.sol#30-45)
+		- ERC721Utils.checkOnERC721Received(_msgSender(),address(0),to,tokenId,data) (lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol#315)
+	State variables written after the call(s):
+	- Characteristics[newTokenId] = CharacteristicsOfRam({ram:to,isJitaKrodhah:false,isDhyutimaan:false,isVidvaan:false,isAatmavan:false,isSatyavaakyah:false}) (src/RamNFT.sol#53-60)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+INFO:Detectors:
+Reentrancy in Dussehra.enterPeopleWhoLikeRam() (src/Dussehra.sol#52-65):
+	External calls:
+	- ramNFT.mintRamNFT(msg.sender) (src/Dussehra.sol#63)
+	Event emitted after the call(s):
+	- PeopleWhoLikeRamIsEntered(msg.sender) (src/Dussehra.sol#64)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp > 1728691200 (src/ChoosingRam.sol#48)
+	- random == 0 (src/ChoosingRam.sol#55)
+ChoosingRam.selectRamIfNotSelected() (src/ChoosingRam.sol#84-96) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp < 1728691200 (src/ChoosingRam.sol#86)
+	- block.timestamp > 1728777600 (src/ChoosingRam.sol#89)
+Dussehra.killRavana() (src/Dussehra.sol#67-88) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp < 1728691069 (src/Dussehra.sol#69)
+	- block.timestamp > 1728777669 (src/Dussehra.sol#72)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) compares to a boolean constant:
+	-ramNFT.getCharacteristics(tokenIdOfAnyPerticipent).isVidvaan == false (src/ChoosingRam.sol#73)
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) compares to a boolean constant:
+	-ramNFT.getCharacteristics(tokenIdOfChallenger).isJitaKrodhah == false (src/ChoosingRam.sol#56)
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) compares to a boolean constant:
+	-ramNFT.getCharacteristics(tokenIdOfChallenger).isAatmavan == false (src/ChoosingRam.sol#62)
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) compares to a boolean constant:
+	-ramNFT.getCharacteristics(tokenIdOfAnyPerticipent).isAatmavan == false (src/ChoosingRam.sol#75)
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) compares to a boolean constant:
+	-ramNFT.getCharacteristics(tokenIdOfAnyPerticipent).isJitaKrodhah == false (src/ChoosingRam.sol#69)
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) compares to a boolean constant:
+	-ramNFT.getCharacteristics(tokenIdOfChallenger).isSatyavaakyah == false (src/ChoosingRam.sol#64)
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) compares to a boolean constant:
+	-ramNFT.getCharacteristics(tokenIdOfChallenger).isDhyutimaan == false (src/ChoosingRam.sol#58)
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) compares to a boolean constant:
+	-ramNFT.getCharacteristics(tokenIdOfAnyPerticipent).isSatyavaakyah == false (src/ChoosingRam.sol#77)
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) compares to a boolean constant:
+	-ramNFT.getCharacteristics(tokenIdOfAnyPerticipent).isDhyutimaan == false (src/ChoosingRam.sol#71)
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) compares to a boolean constant:
+	-ramNFT.getCharacteristics(tokenIdOfChallenger).isVidvaan == false (src/ChoosingRam.sol#60)
+Dussehra.enterPeopleWhoLikeRam() (src/Dussehra.sol#52-65) compares to a boolean constant:
+	-peopleLikeRam[msg.sender] == true (src/Dussehra.sol#57)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#boolean-equality
+INFO:Detectors:
+6 different versions of Solidity are used:
+	- Version constraint >=0.6.2<0.9.0 is used by:
+ 		- lib/forge-std/src/Base.sol#2
+		- lib/forge-std/src/StdAssertions.sol#2
+		- lib/forge-std/src/StdChains.sol#2
+		- lib/forge-std/src/StdCheats.sol#2
+		- lib/forge-std/src/StdError.sol#3
+		- lib/forge-std/src/StdInvariant.sol#2
+		- lib/forge-std/src/StdMath.sol#2
+		- lib/forge-std/src/StdStorage.sol#2
+		- lib/forge-std/src/StdUtils.sol#2
+		- lib/forge-std/src/Test.sol#2
+		- lib/forge-std/src/Vm.sol#4
+		- lib/forge-std/src/interfaces/IMulticall3.sol#2
+		- lib/forge-std/src/mocks/MockERC20.sol#2
+		- lib/forge-std/src/mocks/MockERC721.sol#2
+		- lib/forge-std/src/safeconsole.sol#2
+	- Version constraint >=0.6.0<0.9.0 is used by:
+ 		- lib/forge-std/src/StdJson.sol#2
+		- lib/forge-std/src/StdToml.sol#2
+	- Version constraint >=0.4.22<0.9.0 is used by:
+ 		- lib/forge-std/src/StdStyle.sol#2
+		- lib/forge-std/src/console.sol#2
+		- lib/forge-std/src/console2.sol#2
+	- Version constraint >=0.6.2 is used by:
+ 		- lib/forge-std/src/interfaces/IERC165.sol#2
+		- lib/forge-std/src/interfaces/IERC20.sol#2
+		- lib/forge-std/src/interfaces/IERC721.sol#2
+	- Version constraint ^0.8.20 is used by:
+ 		- lib/openzeppelin-contracts/contracts/interfaces/IERC165.sol#4
+		- lib/openzeppelin-contracts/contracts/interfaces/IERC4906.sol#4
+		- lib/openzeppelin-contracts/contracts/interfaces/IERC721.sol#4
+		- lib/openzeppelin-contracts/contracts/interfaces/draft-IERC6093.sol#3
+		- lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol#4
+		- lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol#4
+		- lib/openzeppelin-contracts/contracts/token/ERC721/IERC721Receiver.sol#4
+		- lib/openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721URIStorage.sol#4
+		- lib/openzeppelin-contracts/contracts/token/ERC721/extensions/IERC721Metadata.sol#4
+		- lib/openzeppelin-contracts/contracts/token/ERC721/utils/ERC721Utils.sol#3
+		- lib/openzeppelin-contracts/contracts/utils/Address.sol#4
+		- lib/openzeppelin-contracts/contracts/utils/Context.sol#4
+		- lib/openzeppelin-contracts/contracts/utils/Errors.sol#3
+		- lib/openzeppelin-contracts/contracts/utils/Panic.sol#3
+		- lib/openzeppelin-contracts/contracts/utils/Strings.sol#4
+		- lib/openzeppelin-contracts/contracts/utils/introspection/ERC165.sol#4
+		- lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol#4
+		- lib/openzeppelin-contracts/contracts/utils/math/Math.sol#4
+		- lib/openzeppelin-contracts/contracts/utils/math/SafeCast.sol#5
+		- lib/openzeppelin-contracts/contracts/utils/math/SignedMath.sol#4
+	- Version constraint 0.8.20 is used by:
+ 		- src/ChoosingRam.sol#2
+		- src/Dussehra.sol#2
+		- src/RamNFT.sol#2
+		- src/mocks/mock.sol#2
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+ChoosingRam.increaseValuesOfParticipants(uint256,uint256) (src/ChoosingRam.sol#33-82) has a high cyclomatic complexity (16).
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#cyclomatic-complexity
+INFO:Detectors:
+Version constraint >=0.6.2<0.9.0 is too complex.
+ It is used by:
+	- lib/forge-std/src/Base.sol#2
+	- lib/forge-std/src/StdAssertions.sol#2
+	- lib/forge-std/src/StdChains.sol#2
+	- lib/forge-std/src/StdCheats.sol#2
+	- lib/forge-std/src/StdError.sol#3
+	- lib/forge-std/src/StdInvariant.sol#2
+	- lib/forge-std/src/StdMath.sol#2
+	- lib/forge-std/src/StdStorage.sol#2
+	- lib/forge-std/src/StdUtils.sol#2
+	- lib/forge-std/src/Test.sol#2
+	- lib/forge-std/src/Vm.sol#4
+	- lib/forge-std/src/interfaces/IMulticall3.sol#2
+	- lib/forge-std/src/mocks/MockERC20.sol#2
+	- lib/forge-std/src/mocks/MockERC721.sol#2
+	- lib/forge-std/src/safeconsole.sol#2
+Version constraint >=0.6.0<0.9.0 is too complex.
+ It is used by:
+	- lib/forge-std/src/StdJson.sol#2
+	- lib/forge-std/src/StdToml.sol#2
+Version constraint >=0.4.22<0.9.0 is too complex.
+ It is used by:
+	- lib/forge-std/src/StdStyle.sol#2
+	- lib/forge-std/src/console.sol#2
+	- lib/forge-std/src/console2.sol#2
+Version constraint >=0.6.2 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching
+	- EmptyByteArrayCopy
+	- DynamicArrayCleanup
+	- MissingEscapingInFormatting
+	- ArraySliceDynamicallyEncodedBaseType
+	- ImplicitConstructorCallvalueCheck
+	- TupleAssignmentMultiStackSlotComponents
+	- MemoryArrayCreationOverflow.
+ It is used by:
+	- lib/forge-std/src/interfaces/IERC165.sol#2
+	- lib/forge-std/src/interfaces/IERC20.sol#2
+	- lib/forge-std/src/interfaces/IERC721.sol#2
+Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess.
+ It is used by:
+	- lib/openzeppelin-contracts/contracts/interfaces/IERC165.sol#4
+	- lib/openzeppelin-contracts/contracts/interfaces/IERC4906.sol#4
+	- lib/openzeppelin-contracts/contracts/interfaces/IERC721.sol#4
+	- lib/openzeppelin-contracts/contracts/interfaces/draft-IERC6093.sol#3
+	- lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol#4
+	- lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol#4
+	- lib/openzeppelin-contracts/contracts/token/ERC721/IERC721Receiver.sol#4
+	- lib/openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721URIStorage.sol#4
+	- lib/openzeppelin-contracts/contracts/token/ERC721/extensions/IERC721Metadata.sol#4
+	- lib/openzeppelin-contracts/contracts/token/ERC721/utils/ERC721Utils.sol#3
+	- lib/openzeppelin-contracts/contracts/utils/Address.sol#4
+	- lib/openzeppelin-contracts/contracts/utils/Context.sol#4
+	- lib/openzeppelin-contracts/contracts/utils/Errors.sol#3
+	- lib/openzeppelin-contracts/contracts/utils/Panic.sol#3
+	- lib/openzeppelin-contracts/contracts/utils/Strings.sol#4
+	- lib/openzeppelin-contracts/contracts/utils/introspection/ERC165.sol#4
+	- lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol#4
+	- lib/openzeppelin-contracts/contracts/utils/math/Math.sol#4
+	- lib/openzeppelin-contracts/contracts/utils/math/SafeCast.sol#5
+	- lib/openzeppelin-contracts/contracts/utils/math/SignedMath.sol#4
+Version constraint 0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess.
+ It is used by:
+	- src/ChoosingRam.sol#2
+	- src/Dussehra.sol#2
+	- src/RamNFT.sol#2
+	- src/mocks/mock.sol#2
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Low level call in Dussehra.killRavana() (src/Dussehra.sol#67-88):
+	- (success,None) = organiser.call{value: totalAmountGivenToRam}() (src/Dussehra.sol#86)
+Low level call in Dussehra.withdraw() (src/Dussehra.sol#92-104):
+	- (success,None) = msg.sender.call{value: amount}() (src/Dussehra.sol#101)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Detectors:
+Modifier ChoosingRam.RamIsNotSelected() (src/ChoosingRam.sol#18-21) is not in mixedCase
+Modifier ChoosingRam.OnlyOrganiser() (src/ChoosingRam.sol#23-26) is not in mixedCase
+Variable Dussehra.WantToBeLikeRam (src/Dussehra.sol#18) is not in mixedCase
+Variable Dussehra.SelectedRam (src/Dussehra.sol#21) is not in mixedCase
+Variable Dussehra.IsRavanKilled (src/Dussehra.sol#23) is not in mixedCase
+Modifier Dussehra.RamIsSelected() (src/Dussehra.sol#30-33) is not in mixedCase
+Modifier Dussehra.OnlyRam() (src/Dussehra.sol#35-38) is not in mixedCase
+Modifier Dussehra.RavanKilled() (src/Dussehra.sol#40-43) is not in mixedCase
+Parameter RamNFT.setChoosingRamContract(address)._choosingRamContract (src/RamNFT.sol#45) is not in mixedCase
+Parameter RamNFT.updateCharacteristics(uint256,bool,bool,bool,bool,bool)._isJitaKrodhah (src/RamNFT.sol#65) is not in mixedCase
+Parameter RamNFT.updateCharacteristics(uint256,bool,bool,bool,bool,bool)._isDhyutimaan (src/RamNFT.sol#66) is not in mixedCase
+Parameter RamNFT.updateCharacteristics(uint256,bool,bool,bool,bool,bool)._isVidvaan (src/RamNFT.sol#67) is not in mixedCase
+Parameter RamNFT.updateCharacteristics(uint256,bool,bool,bool,bool,bool)._isAatmavan (src/RamNFT.sol#68) is not in mixedCase
+Parameter RamNFT.updateCharacteristics(uint256,bool,bool,bool,bool,bool)._isSatyavaakyah (src/RamNFT.sol#69) is not in mixedCase
+Variable RamNFT.Characteristics (src/RamNFT.sol#24) is not in mixedCase
+Contract mock (src/mocks/mock.sol#4-6) is not in CapWords
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+The following unused import(s) in lib/forge-std/src/StdCheats.sol should be removed:
+	-import {console2} from "./console2.sol"; (lib/forge-std/src/StdCheats.sol#7)
+The following unused import(s) in lib/forge-std/src/Test.sol should be removed:
+	- {safeconsole} from "./safeconsole.sol";
+impor (lib/forge-std/src/Test.sol#12)
+	- {stdJson} from "./StdJson.sol";
+impor (lib/forge-std/src/Test.sol#18)
+	- {Vm} from "./Vm.sol";
+
+// 📦 (lib/forge-std/src/Test.sol#24)
+	- {stdMath} from "./StdMath.sol";
+impor (lib/forge-std/src/Test.sol#19)
+	- {console} from "./console.sol";
+impor (lib/forge-std/src/Test.sol#10)
+	- {StdStorage, stdStorage} from "./StdStorage.sol";
+impor (lib/forge-std/src/Test.sol#20)
+	- {StdStyle} from "./StdStyle.sol";
+impor (lib/forge-std/src/Test.sol#21)
+	- {console2} from "./console2.sol";
+impor (lib/forge-std/src/Test.sol#11)
+	- {stdError} from "./StdError.sol";
+impor (lib/forge-std/src/Test.sol#16)
+	- {stdToml} from "./StdToml.sol";
+impor (lib/forge-std/src/Test.sol#22)
+The following unused import(s) in lib/openzeppelin-contracts/contracts/interfaces/IERC165.sol should be removed:
+	-import {IERC165} from "../utils/introspection/IERC165.sol"; (lib/openzeppelin-contracts/contracts/interfaces/IERC165.sol#6)
+The following unused import(s) in lib/openzeppelin-contracts/contracts/interfaces/IERC4906.sol should be removed:
+	-import {IERC721} from "./IERC721.sol"; (lib/openzeppelin-contracts/contracts/interfaces/IERC4906.sol#7)
+	-import {IERC165} from "./IERC165.sol"; (lib/openzeppelin-contracts/contracts/interfaces/IERC4906.sol#6)
+The following unused import(s) in lib/openzeppelin-contracts/contracts/interfaces/IERC721.sol should be removed:
+	-import {IERC721} from "../token/ERC721/IERC721.sol"; (lib/openzeppelin-contracts/contracts/interfaces/IERC721.sol#6)
+The following unused import(s) in lib/openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721URIStorage.sol should be removed:
+	-import {IERC165} from "../../../interfaces/IERC165.sol"; (lib/openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721URIStorage.sol#9)
+The following unused import(s) in src/Dussehra.sol should be removed:
+	-import {console} from "forge-std/Test.sol"; (src/Dussehra.sol#7)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-imports
+INFO:Detectors:
+Dussehra.SelectedRam (src/Dussehra.sol#21) should be constant
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#state-variables-that-could-be-declared-constant
+INFO:Detectors:
+ChoosingRam.ramNFT (src/ChoosingRam.sol#15) should be immutable
+Dussehra.choosingRamContract (src/Dussehra.sol#26) should be immutable
+Dussehra.entranceFee (src/Dussehra.sol#19) should be immutable
+Dussehra.organiser (src/Dussehra.sol#20) should be immutable
+Dussehra.ramNFT (src/Dussehra.sol#22) should be immutable
+RamNFT.organiser (src/RamNFT.sol#21) should be immutable
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#state-variables-that-could-be-declared-immutable
+INFO:Slither:. analyzed (55 contracts with 95 detectors), 65 result(s) found
